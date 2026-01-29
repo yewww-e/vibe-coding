@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오늘 점심 뭐 먹지?</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #FFF5E5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 40px 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      color: #333333;
+      font-size: 1.8rem;
+      margin-bottom: 30px;
+    }
+
+    #result {
+      background-color: #88BCD8;
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 25px 40px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      min-width: 250px;
+    }
+
+    button {
+      background-color: #FFE5E5;
+      color: #333333;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #FFD5D5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>오늘 점심 뭐 먹지?</h1>
+    <div id="result">버튼을 눌러보세요!</div>
+    <button id="pickBtn">추천받기</button>
+  </div>
+
+  <script>
+    const menus = [
+      // 한식
+      '김치찌개', '된장찌개', '비빔밥', '불고기', '삼겹살', '냉면', '칼국수', '떡볶이',
+      // 중식
+      '짜장면', '짬뽕', '탕수육', '마파두부', '볶음밥',
+      // 일식
+      '초밥', '라멘', '돈카츠', '우동', '카레',
+      // 양식
+      '파스타', '피자', '햄버거'
+    ];
+
+    function getRandomMenu() {
+      const randomIndex = Math.floor(Math.random() * menus.length);
+      return menus[randomIndex];
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const resultEl = document.getElementById('result');
+      const pickBtn = document.getElementById('pickBtn');
+
+      pickBtn.addEventListener('click', function() {
+        resultEl.textContent = getRandomMenu();
+      });
+    });
+  </script>
+</body>
+</html>
