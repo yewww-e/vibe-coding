@@ -398,7 +398,7 @@ p{margin:0}
       <div class="row"><div class="tags">${isNew(n) ? '<span class="tag new">NEW</span>' : ''}${(n.tags||[]).map(t => `<span class="tag">${esc(TAGS[t]||t)}</span>`).join('')}${n.rumor ? '<span class="tag">루머·예정</span>' : ''}</div><span class="date num">${esc(fmtDate(n.date))}</span></div>
       <h3>${esc(n.title)}</h3>
       <p class="sum">${esc(n.summary)}</p>
-      ${n.why ? `<p class="why"><b>디자이너에게</b> ${esc(n.why)}</p>` : ''}
+      ${n.why ? `<p class="why"><b>Insight</b> ${esc(n.why)}</p>` : ''}
       <div class="acts">
         ${n.url ? `<a class="btn link" href="${esc(n.url)}" target="_blank" rel="noopener">원문 ↗ <small>${esc(host(n.url))}</small></a>` : ''}
         <button class="btn" data-explain="${esc(n.id)}" hidden>쉽게 설명</button>
