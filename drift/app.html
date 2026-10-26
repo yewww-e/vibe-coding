@@ -68,16 +68,18 @@ p{margin:0}
 .foot a{color:var(--fg-2)}
 
 /* briefing (What's New style) */
-.brief{background:var(--surface);border-radius:var(--r);padding:18px 16px 14px}
+.brief{padding:10px 4px 4px}
 .brief .week{font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.02em}
 .brief h2{font-size:22px;font-weight:700;letter-spacing:-.015em;margin-top:4px}
 .brief .rows{display:grid;gap:14px;margin-top:16px}
 .brow{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start}
-.brow .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.brow .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 .5px var(--line)}
 .brow .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .brow .t{font-size:15px;font-weight:600;line-height:1.4}
 .brow .d{font-size:14px;color:var(--fg-2);line-height:1.55;margin-top:2px}
 .brief .next{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--fg-2)}
+.brief .rows{margin-top:18px}
+.brow .ic{background:var(--surface)}
 
 .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .tile{background:var(--surface);border-radius:var(--r);padding:11px 12px;min-width:0}
@@ -162,8 +164,10 @@ p{margin:0}
 .dir.down{background:var(--fill);color:var(--fg-2)}
 .dir.hold{background:transparent;color:var(--fg-3);border:1px solid var(--line)}
 .role p{font-size:14.5px;color:var(--fg-2);line-height:1.65}
-.role .fit{font-size:13px;color:var(--fg-2);line-height:1.6}
-.role .fit b{color:var(--fg);font-weight:600}
+.role .fit{border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.role .fit .fl{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--fg-2)}
+.role .fit .fl b{font-size:14.5px;color:var(--accent);font-weight:700}
+.role .fit .fw{font-size:13.5px;color:var(--fg-2);line-height:1.55;margin-top:3px}
 .role .src{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
 .posting{padding:13px 16px;display:grid;gap:3px;background:var(--surface)}
 .posting .co{font-size:12px;color:var(--fg-2);font-weight:500}
@@ -401,7 +405,7 @@ p{margin:0}
     return `<div class="role">
       <div class="row"><span class="dir ${esc(r.dir)}">${dir}${r.delta ? ' · ' + esc(r.delta) : ''}</span><h3>${esc(r.title)}</h3></div>
       <p>${esc(r.desc)}</p>
-      ${r.fit ? `<div class="fit"><b>내 JD 적합도 ${esc(r.fit)}</b> · ${esc(r.fitWhy||'')}</div>` : ''}
+      ${r.fit ? `<div class="fit"><div class="fl"><span>내 JD 적합도</span><b>${esc(r.fit)}</b></div>${r.fitWhy ? `<div class="fw">${esc(r.fitWhy)}</div>` : ''}</div>` : ''}
       ${srcs ? `<div class="src">${srcs}</div>` : ''}</div>`;
   }
   function postingHTML(p){
