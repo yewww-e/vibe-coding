@@ -113,6 +113,11 @@ p{margin:0}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--seg-bg);border-radius:9px;padding:2px;margin:4px 0 0}
 .seg button{padding:7px 10px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--fg-2)}
 .seg button[aria-pressed="true"]{background:var(--seg-sel);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04)}
+.seg button{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.seg-ic{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.seg button[aria-pressed="true"] .seg-ic{fill:currentColor}
+.seg-n{font-size:12px;color:var(--fg-2);font-weight:500}
+.seg-n:empty{display:none}
 
 /* news row */
 .news{padding:14px 16px;display:grid;gap:8px;background:var(--surface)}
@@ -261,9 +266,13 @@ p{margin:0}
     </section>
 
     <section class="view" id="view-news" data-view="news">
-      <div class="chips" id="newsChips" style="margin-top:6px"></div>
+      <div class="seg" role="tablist" aria-label="범위">
+        <button role="tab" data-scope="all" aria-pressed="true">전체</button>
+        <button role="tab" data-scope="saved" aria-pressed="false"><svg class="seg-ic" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>스크랩<span class="seg-n" id="savedCount"></span></button>
+      </div>
+      <div class="chips" id="newsChips" style="margin-top:12px"></div>
       <div class="group" style="margin-top:8px"><div class="list" id="newsList"></div></div>
-      <p class="foot">반짝이 아이콘은 이 항목의 내용만 바탕으로 Claude가 더 풀어서 설명합니다. 처음 한 번 허용 확인이 뜹니다. 저장 목록은 이 기기의 브라우저에만 남습니다.</p>
+      <p class="foot">반짝이 아이콘은 이 항목의 내용만 바탕으로 Claude가 더 풀어서 설명합니다. 처음 한 번 허용 확인이 뜹니다. 스크랩은 이 기기의 브라우저에만 남습니다.</p>
     </section>
 
   </main>
@@ -305,7 +314,7 @@ p{margin:0}
 
   // ---- state ----
   const state = {
-    tab: 'home', region: 'kr', country: 'us', filter: 'all',
+    tab: 'home', region: 'kr', country: 'us', filter: 'all', scope: load('scope', 'all'),
     news: SEED.news.slice(), jobs: SEED.jobs, meta: SEED.meta,
     saved: load('saved', []), sample: null, mcp: null, db: null, status: null,
     profiles: [], profileId: load('profileId', 'p1'),
@@ -445,6 +454,7 @@ p{margin:0}
       ${g.down && g.down.length ? `<div class="group"><div class="group-h"><h2>줄어들거나 합쳐지는 직무</h2></div><div class="list">${g.down.map(roleHTML).join('')}</div></div>` : ''}
       ${g.postings && g.postings.length ? `<div class="group"><div class="group-h"><h2>실제 공고 예시</h2></div><div class="list">${g.postings.map(postingHTML).join('')}</div></div>` : ''}`;
   }
+  $$('.seg [data-scope]').forEach(b => b.addEventListener('click', () => { state.scope = b.dataset.scope; save('scope', state.scope); renderNewsChips(); renderNews(); window.scrollTo({top:0}); }));
   $$('.seg [data-region]').forEach(b => b.addEventListener('click', () => {
     state.region = b.dataset.region;
     $$('.seg [data-region]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
@@ -465,15 +475,16 @@ p{margin:0}
       <div class="explain" id="ex-${esc(n.id)}" hidden></div></article>`;
   }
   function renderNewsChips(){
-    const keys = ['all'].concat(Object.keys(TAGS)).concat(['saved']);
-    $('#newsChips').innerHTML = keys.map(k => `<button class="chip" data-filter="${k}" aria-pressed="${String(k===state.filter)}">${k==='all'?'전체':k==='saved'?('저장됨' + (state.saved.length ? ' ' + state.saved.length : '')):esc(TAGS[k])}</button>`).join('');
+    const keys = ['all'].concat(Object.keys(TAGS));
+    $('#newsChips').innerHTML = keys.map(k => `<button class="chip" data-filter="${k}" aria-pressed="${String(k===state.filter)}">${k==='all'?'전체':esc(TAGS[k])}</button>`).join('');
+    $('#savedCount').textContent = state.saved.length ? String(state.saved.length) : '';
+    $$('.seg [data-scope]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scope === state.scope)));
     $$('#newsChips .chip').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; renderNewsChips(); renderNews(); }));
   }
   function renderNews(){
-    let items;
-    if (state.filter === 'saved') items = state.news.filter(n => state.saved.includes(n.id)).sort((a,b) => (b.date||'').localeCompare(a.date||''));
-    else items = freshNews().filter(n => state.filter === 'all' || (n.tags||[]).includes(state.filter));
-    $('#newsList').innerHTML = items.map(newsHTML).join('') || (state.filter === 'saved' ? '<div class="empty">카드의 북마크 아이콘을 누르면 여기에 모입니다.</div>' : '<div class="empty">이 분류에는 아직 항목이 없습니다.</div>');
+    const base = state.scope === 'saved' ? state.news.filter(n => state.saved.includes(n.id)).sort((a,b) => (b.date||'').localeCompare(a.date||'')) : freshNews();
+    const items = base.filter(n => state.filter === 'all' || (n.tags||[]).includes(state.filter));
+    $('#newsList').innerHTML = items.map(newsHTML).join('') || (state.scope === 'saved' ? '<div class="empty">카드의 북마크 아이콘을 누르면 여기에 모입니다.</div>' : '<div class="empty">이 분류에는 아직 항목이 없습니다.</div>');
     wireNews();
   }
   function wireNews(){
@@ -483,7 +494,7 @@ p{margin:0}
       save('saved', state.saved);
       $$(`[data-save="${CSS.escape(id)}"]`).forEach(x => { const on = state.saved.includes(id); x.setAttribute('aria-pressed', String(on)); x.setAttribute('aria-label', on ? '저장 해제' : '저장'); });
       toast(i >= 0 ? '저장을 해제했습니다' : '저장했습니다');
-      renderNewsChips(); if (state.filter === 'saved') renderNews();
+      renderNewsChips(); if (state.scope === 'saved') renderNews();
     });
     $$('[data-explain]').forEach(b => { b.hidden = !state.sample; b.onclick = () => explain(b.dataset.explain, b); });
   }
