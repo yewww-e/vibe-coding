@@ -50,6 +50,10 @@ p{margin:0}
 
 /* large-title header */
 .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg)}
+.subbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--topbar-h,56px));z-index:8;background:var(--bg);padding-top:4px;padding-bottom:8px;transition:transform .22s ease,opacity .18s ease}
+.subbar.hide{transform:translateY(-120%);opacity:0;pointer-events:none}
+.subbar .seg{margin-top:0}
+@media (prefers-reduced-motion:reduce){.subbar{transition:none}}
 .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 8px}
 .topbar h1{font-size:20px;font-weight:800;letter-spacing:-.02em}
 .tools{display:flex;gap:8px;align-items:center}
@@ -274,9 +278,11 @@ p{margin:0}
         <div class="addp-acts"><button class="btn primary" id="addSubmit">분석 시작</button><span class="addp-note" id="addNote"></span></div>
       </div>
       <div class="banner" id="pBanner" hidden style="margin-top:12px"></div>
-      <div class="seg" role="tablist" aria-label="지역" style="margin-top:12px">
-        <button role="tab" data-region="kr" aria-pressed="true">국내</button>
-        <button role="tab" data-region="global" aria-pressed="false">해외</button>
+      <div class="subbar">
+        <div class="seg" role="tablist" aria-label="지역">
+          <button role="tab" data-region="kr" aria-pressed="true">국내</button>
+          <button role="tab" data-region="global" aria-pressed="false">해외</button>
+        </div>
       </div>
       <div id="jobsKr">
         <div class="group" style="margin-top:14px"><details class="card jd" id="jdCard"></details></div>
@@ -293,11 +299,13 @@ p{margin:0}
     </section>
 
     <section class="view" id="view-news" data-view="news">
-      <div class="seg" role="tablist" aria-label="범위">
-        <button role="tab" data-scope="all" aria-pressed="true">전체</button>
-        <button role="tab" data-scope="saved" aria-pressed="false"><svg class="seg-ic" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>스크랩<span class="seg-n" id="savedCount"></span></button>
+      <div class="subbar">
+        <div class="seg" role="tablist" aria-label="범위">
+          <button role="tab" data-scope="all" aria-pressed="true">전체</button>
+          <button role="tab" data-scope="saved" aria-pressed="false"><svg class="seg-ic" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>스크랩<span class="seg-n" id="savedCount"></span></button>
+        </div>
+        <div class="tabs" id="newsChips"></div>
       </div>
-      <div class="tabs" id="newsChips"></div>
       <div class="group" style="margin-top:8px"><div class="list" id="newsList"></div></div>
       <p class="foot">반짝이 아이콘은 이 항목의 내용만 바탕으로 Claude가 더 풀어서 설명합니다. 처음 한 번 허용 확인이 뜹니다. 스크랩은 이 기기의 브라우저에만 남습니다.</p>
     </section>
@@ -376,7 +384,8 @@ p{margin:0}
     state.tab = tab;
     $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === tab));
     $$('.tabbar button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    window.scrollTo({top:0}); save('tab', tab);
+    window.scrollTo({top:0}); save('tab', tab); lastY = 0; accum = 0;
+    $$('.subbar').forEach(b => b.classList.remove('hide'));
   }
   $$('.tabbar button').forEach(b => b.addEventListener('click', () => go(b.dataset.tab)));
   $$('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
@@ -662,6 +671,18 @@ p{margin:0}
     try { await state.db.doc('profiles/' + id).delete(); if (state.profileId === id) { state.profileId = 'p1'; save('profileId', 'p1'); } toast('프로필을 삭제했습니다'); }
     catch { toast('삭제하지 못했어요'); }
   }
+
+  // ---- sub bars: hide on scroll down, show on scroll up ----
+  function measureTop(){ document.documentElement.style.setProperty('--topbar-h', $('.topbar').offsetHeight + 'px'); }
+  measureTop(); window.addEventListener('resize', measureTop);
+  let lastY = window.scrollY, accum = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY, dy = y - lastY; lastY = y;
+    accum = Math.sign(dy) === Math.sign(accum) ? accum + dy : dy;
+    const bars = $$('.view.active .subbar');
+    if (y < 60 || accum < -12) bars.forEach(b => b.classList.remove('hide'));
+    else if (accum > 24) bars.forEach(b => b.classList.add('hide'));
+  }, { passive: true });
 
   // ---- toast ----
   let toastT;
