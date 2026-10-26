@@ -88,8 +88,8 @@
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
     padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
     padding-bottom:env(safe-area-inset-bottom,0px)}
-  .tabbar .wrap{display:grid;grid-template-columns:repeat(5,1fr)}
-  .tab{appearance:none;background:none;border:0;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;cursor:pointer;font-size:.72rem;font-weight:500;border-radius:10px}
+  .tabbar .wrap{display:grid;grid-template-columns:repeat(6,1fr)}
+  .tab{appearance:none;background:none;border:0;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 2px 8px;cursor:pointer;font-size:.68rem;white-space:nowrap;font-weight:500;border-radius:10px}
   .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .tab[aria-current="page"]{color:var(--accent)}
   /* 홈 */
@@ -136,6 +136,31 @@
   .chips{display:flex;gap:6px;flex-wrap:wrap}
   .chip{font:inherit;font-size:.8rem;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
   .chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+  /* 뉴스 읽기 */
+  .headline{font-family:var(--display);font-size:1.3rem;line-height:1.4;padding:14px 16px;border-radius:12px;background:var(--bg);border-left:4px solid var(--warn)}
+  .headline small{display:block;font-family:var(--body);font-size:.75rem;color:var(--muted);margin-bottom:4px;letter-spacing:.04em}
+  .target{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .target b{font-size:1.05rem}
+  .ways{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .way{padding:12px;border-radius:12px;background:var(--bg);min-width:0}
+  .way b{display:block;margin-bottom:4px}
+  .way p{font-size:.82rem;color:var(--muted)}
+  .sheet{width:100%;border-collapse:collapse;font-size:.88rem}
+  .sheet th,.sheet td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .sheet th{font-size:.72rem;letter-spacing:.06em;color:var(--muted);font-weight:500}
+  .sheet td:first-child{font-weight:500;white-space:nowrap}
+  .sheet-wrap{overflow-x:auto}
+  details{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+  details summary{cursor:pointer;padding:12px 16px;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::after{content:"+";color:var(--muted);font-family:var(--mono)}
+  details[open] summary::after{content:"−"}
+  details .body{padding:0 16px 14px;display:flex;flex-direction:column;gap:8px}
+  details .body p{font-size:.92rem}
+  details .body ol,details .body ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;font-size:.92rem}
+  .streak{display:flex;gap:4px}
+  .streak i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+  .streak i.ok{background:var(--good)} .streak i.bad{background:var(--up)}
+  @media (max-width:420px){ .ways{grid-template-columns:1fr} }
   /* 모의투자 */
   .stock{display:grid;grid-template-columns:1fr 92px auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
   .stock:last-child{border-bottom:0}
@@ -201,6 +226,12 @@
       <p class="muted" id="todayDesc"></p>
       <div><button class="btn btn-ghost" data-go="glossary">용어사전 전체 보기</button></div>
     </div>
+    <div class="card stack">
+      <p class="eyebrow">뉴스 읽기 연습</p>
+      <h3 id="homeNews">기사가 주가에 어떤 영향을 줄지 맞혀보기</h3>
+      <p class="muted small" id="homeNewsSub">금리·환율·실적 같은 뉴스가 어느 종목에 호재인지 악재인지 연습합니다.</p>
+      <div><button class="btn" data-go="news">뉴스 읽기 탭으로</button></div>
+    </div>
     <div class="card stack flat">
       <p class="eyebrow">이 앱에서 쓰는 약속</p>
       <p class="small">한국 주식 시장의 관례대로 <b class="up-c">빨강은 오른 것</b>, <b class="down-c">파랑은 내린 것</b>입니다. 미국 앱은 반대이니 헷갈리지 마세요.</p>
@@ -241,6 +272,74 @@
     <input class="search" id="termSearch" type="search" placeholder="용어 검색 (예: PER, 호가, 배당)" aria-label="용어 검색">
     <div class="chips" id="termChips"></div>
     <div class="card" id="termList"></div>
+  </section>
+
+  <!-- 뉴스 읽기 -->
+  <section class="view" id="view-news" hidden>
+    <div class="stack">
+      <p class="eyebrow">뉴스 읽기</p>
+      <h2>이 기사, 주가에 어떤 영향일까?</h2>
+      <p class="muted small">뉴스가 주가를 움직이는 원리를 익히고, 헤드라인을 보고 방향을 맞히는 연습을 합니다.</p>
+    </div>
+    <div class="card stack">
+      <p class="eyebrow">뉴스가 주가에 닿는 세 가지 길</p>
+      <div class="ways">
+        <div class="way"><b>① 회사 자체</b><p>실적 발표, 수주, 신제품, 사고, 소송, 경영진 문제. 그 회사 주가에 직접 영향.</p></div>
+        <div class="way"><b>② 업종·산업</b><p>원자재 가격, 규제, 경쟁사 움직임, 수요 변화. 같은 업종 회사들이 함께 움직임.</p></div>
+        <div class="way"><b>③ 경제 전체</b><p>금리, 환율, 유가, 전쟁·정치. 시장 전체가 흔들리지만 업종마다 방향이 다름.</p></div>
+      </div>
+      <p class="small">기사를 읽으면 먼저 "이건 어느 길로 들어오는 뉴스지?"를 물어보세요. 그 다음에 "누가 돈을 더 벌고, 누가 덜 벌게 되지?"를 생각하면 방향이 보입니다.</p>
+    </div>
+    <div class="stack">
+      <details><summary>핵심 원리 1 · 이익이 늘면 오르고, 줄면 내린다</summary><div class="body">
+        <p>주가는 결국 "이 회사가 앞으로 얼마나 벌까"에 대한 기대입니다. 뉴스가 <b>매출을 늘리거나 비용을 줄이면 호재</b>, 그 반대면 악재예요.</p>
+        <p>예: 유가가 오르면 항공사는 연료비(비용)가 늘어 악재, 정유사는 파는 제품 값(매출)이 올라 호재. 같은 뉴스라도 회사마다 반대로 움직입니다.</p></div></details>
+      <details><summary>핵심 원리 2 · 중요한 건 뉴스 자체가 아니라 "기대와의 차이"</summary><div class="body">
+        <p>"사상 최대 이익"인데 주가가 떨어지는 일이 흔합니다. 시장이 그보다 더 큰 이익을 <b>이미 기대하고</b> 있었기 때문이에요.</p>
+        <p>반대로 "적자"인데 오르기도 합니다. 예상보다 적자가 작았다면요. 기사에서 <b>"예상치를 상회/하회"</b>, <b>"컨센서스"</b>라는 말을 찾아보세요.</p>
+        <p>그래서 "소문에 사서 뉴스에 팔아라"는 말이 있어요. 좋은 소식이 공식 발표될 때쯤엔 이미 가격에 반영돼 있을 때가 많습니다.</p></div></details>
+      <details><summary>핵심 원리 3 · 금리·환율·유가, 세 가지 큰 바람</summary><div class="body">
+        <ul>
+          <li><b>금리가 오르면</b> 돈 빌리는 비용이 늘고 예금이 매력적이 되어 주식 전체에 부담. 특히 미래 이익에 기대는 성장주(기술·바이오)가 많이 흔들려요. 은행은 이자 마진이 늘어 예외적으로 유리.</li>
+          <li><b>환율이 오르면(원화 약세)</b> 달러로 번 돈이 원화로 더 커져 수출 기업(자동차·반도체·조선)에 유리. 원재료를 수입하거나 달러 빚이 많은 기업(항공·식품 일부)에는 불리.</li>
+          <li><b>유가가 오르면</b> 정유·에너지는 유리, 항공·해운·화학·운송은 비용이 늘어 불리.</li>
+        </ul></div></details>
+      <details><summary>핵심 원리 4 · 일시적인가, 계속되는가</summary><div class="body">
+        <p>공장 화재는 한 번이면 끝나지만, 핵심 제품 수요 감소는 몇 년을 갑니다. 시장은 <b>계속되는 변화</b>에 훨씬 크게 반응해요.</p>
+        <p>기사에서 "일회성", "구조적", "장기 계약" 같은 말이 보이면 지속 여부를 알려주는 힌트입니다.</p></div></details>
+      <details><summary>진짜 기사를 읽을 때 던질 질문 4개</summary><div class="body">
+        <ol>
+          <li><b>누구 얘기인가?</b> 특정 회사, 업종, 아니면 시장 전체?</li>
+          <li><b>돈이 어디로 움직이나?</b> 매출이 늘거나 비용이 주는 쪽(호재)? 반대(악재)?</li>
+          <li><b>이미 알려진 일인가?</b> 며칠 전부터 나오던 얘기면 가격에 반영됐을 가능성이 커요.</li>
+          <li><b>얼마나 오래 가나?</b> 한 번뿐인 일인지, 계속될 변화인지.</li>
+        </ol>
+        <p class="muted small">네 질문에 답이 안 나오면 "모르겠다"가 정답입니다. 모르는 뉴스로 거래하지 않는 것도 실력이에요.</p></div></details>
+    </div>
+    <div class="card stack" id="newsBox"></div>
+    <div class="card stack">
+      <p class="eyebrow">자주 나오는 뉴스 치트시트</p>
+      <div class="sheet-wrap"><table class="sheet">
+        <thead><tr><th>뉴스</th><th>유리한 쪽</th><th>불리한 쪽</th></tr></thead>
+        <tbody>
+          <tr><td>금리 인상</td><td>은행·보험</td><td>성장주, 건설·부동산, 빚 많은 기업</td></tr>
+          <tr><td>금리 인하</td><td>성장주, 건설·부동산</td><td>은행(마진 축소)</td></tr>
+          <tr><td>환율 상승(원화 약세)</td><td>수출주(자동차·반도체·조선)</td><td>항공, 원재료 수입 기업</td></tr>
+          <tr><td>유가 상승</td><td>정유·에너지</td><td>항공·해운·화학·운송</td></tr>
+          <tr><td>실적이 예상치 상회</td><td>그 회사</td><td>-</td></tr>
+          <tr><td>실적이 예상치 하회</td><td>-</td><td>그 회사 (최대 이익이어도)</td></tr>
+          <tr><td>자사주 매입·소각</td><td>그 회사(주식 수 감소)</td><td>-</td></tr>
+          <tr><td>유상증자(주식 더 발행)</td><td>-</td><td>그 회사(주식 가치 희석)</td></tr>
+          <tr><td>대주주 지분 매각</td><td>-</td><td>그 회사(물량 부담, 신호)</td></tr>
+          <tr><td>정부 보조금·규제 완화</td><td>해당 업종</td><td>-</td></tr>
+          <tr><td>규제 강화·세금 인상</td><td>-</td><td>해당 업종</td></tr>
+          <tr><td>대형 수주·장기 계약</td><td>그 회사, 협력사</td><td>경쟁사</td></tr>
+          <tr><td>사고·리콜·수사</td><td>경쟁사(반사이익)</td><td>그 회사</td></tr>
+          <tr><td>지수(코스피200 등) 편입</td><td>그 회사(ETF가 사야 함)</td><td>-</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted small">"대체로 이렇다"는 표입니다. 이미 반영된 정도, 기대와의 차이, 그날의 시장 분위기에 따라 실제 움직임은 달라져요.</p>
+    </div>
   </section>
 
   <!-- 퀴즈 -->
@@ -288,6 +387,7 @@
     <button class="tab" data-go="home" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
     <button class="tab" data-go="learn"><svg viewBox="0 0 24 24"><path d="M4 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4z"/><path d="M20 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>배우기</button>
     <button class="tab" data-go="glossary"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>용어</button>
+    <button class="tab" data-go="news"><svg viewBox="0 0 24 24"><path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"/><path d="M19 9h1a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2"/><path d="M7 9h7M7 12h7M7 15h4"/></svg>뉴스</button>
     <button class="tab" data-go="quiz"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 7-7"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>퀴즈</button>
     <button class="tab" data-go="sim"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg>모의투자</button>
   </div>
@@ -463,7 +563,7 @@ const fmt = n => Math.round(n).toLocaleString('ko-KR');
 const pct = (n, d=1) => (n>0?'+':'') + n.toFixed(d) + '%';
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800); }
 
-const VIEWS=['home','learn','lesson','glossary','quiz','sim'];
+const VIEWS=['home','learn','lesson','glossary','news','quiz','sim'];
 function go(v){
   if(!VIEWS.includes(v)) v='home';
   VIEWS.forEach(x=>{ $('#view-'+x).hidden = x!==v; });
@@ -474,6 +574,7 @@ function go(v){
   if(v==='home') renderHome();
   if(v==='learn') renderLessonList();
   if(v==='glossary') renderTerms();
+  if(v==='news') renderNewsStart();
   if(v==='quiz') renderQuizStart();
   if(v==='sim') renderSim();
   window.scrollTo({top:0});
@@ -498,6 +599,7 @@ function renderHome(){
   else { $('#homeCta').textContent='종합 퀴즈 풀기'; $('#homeCta').onclick=()=>go('quiz'); $('#homeTitle').textContent='강의를 모두 마쳤어요!'; }
   const day = Math.floor(Date.now()/864e5); const t = TERMS[day % TERMS.length];
   $('#todayTerm').textContent=t.t; $('#todayDesc').textContent=t.d;
+  if(state.news&&state.news.plays) $('#homeNewsSub').textContent=`지금까지 ${state.news.plays}회 연습, 최고 ${state.news.best}/10. 오늘도 한 번 해볼까요?`;
 }
 
 // ===== 강의 목록 =====
@@ -574,6 +676,80 @@ function renderTerms(){
     : `<p class="muted">"${$('#termSearch').value}"에 맞는 용어가 없어요.</p>`;
 }
 $('#termSearch').addEventListener('input', renderTerms);
+
+// ===== 뉴스 읽기 연습 (가상 헤드라인) =====
+// way: 1 회사 / 2 업종 / 3 경제   a: 0 호재 / 1 악재 / 2 중립
+const NEWSQ=[
+ {h:'한국은행, 기준금리 0.25%p 인상 결정', t:'주식시장 전체', way:3, a:1, e:'돈 빌리는 비용이 늘고 예금 이자가 매력적이 되어 주식 전체에 부담입니다. 특히 성장주가 많이 흔들려요.'},
+ {h:'한국은행, 기준금리 0.25%p 인상 결정', t:'은행주', way:3, a:0, e:'같은 뉴스지만 은행은 대출 이자를 더 받게 되어 이익(예대마진)이 늘어납니다. 뉴스 하나가 업종마다 반대로 작용하는 대표 사례예요.'},
+ {h:'원/달러 환율 1,400원 돌파, 원화 약세 지속', t:'자동차·반도체 수출 기업', way:3, a:0, e:'달러로 번 돈을 원화로 바꾸면 더 많아지니 수출 기업에는 유리합니다.'},
+ {h:'원/달러 환율 1,400원 돌파, 원화 약세 지속', t:'항공사', way:3, a:1, e:'항공사는 비행기 리스료와 연료를 달러로 내고 달러 빚도 많아, 원화가 약해지면 비용이 늘어납니다.'},
+ {h:'국제 유가 급등, 배럴당 100달러 넘어', t:'항공사', way:2, a:1, e:'연료비는 항공사 비용의 큰 부분입니다. 유가 상승은 항공사에 악재예요.'},
+ {h:'국제 유가 급등, 배럴당 100달러 넘어', t:'정유사', way:2, a:0, e:'정유사는 파는 제품 값이 오르고 미리 사둔 원유 가치도 올라 보통 호재로 봅니다.'},
+ {h:'한빛전자, 2분기 영업이익 시장 예상치 30% 상회', t:'한빛전자', way:1, a:0, e:'"예상치 상회"가 핵심입니다. 시장이 기대한 것보다 더 잘 벌었으니 호재예요.'},
+ {h:'한빛전자, 사상 최대 영업이익 기록... 다만 시장 기대치에는 못 미쳐', t:'한빛전자', way:1, a:1, e:'사상 최대라도 시장이 기대한 것보다 작으면 실망 매물이 나옵니다. 중요한 건 숫자 자체가 아니라 기대와의 차이예요.'},
+ {h:'푸른바이오, 신약 임상 3상 성공... 내년 허가 신청', t:'푸른바이오', way:1, a:0, e:'신약 회사에게 임상 성공은 미래 매출이 생긴다는 뜻이라 큰 호재입니다.'},
+ {h:'푸른바이오, 주력 신약 임상 중단 결정', t:'푸른바이오', way:1, a:1, e:'기대하던 미래 매출이 사라지는 것이라 큰 악재입니다. 바이오주는 이런 뉴스에 하루 수십 %씩 움직이기도 해요.'},
+ {h:'정부, 전기차 구매 보조금 내년 두 배로 확대', t:'전기차·배터리 업종', way:2, a:0, e:'보조금이 늘면 전기차가 더 팔리고 배터리 수요도 늘어납니다. 업종 전체에 호재예요.'},
+ {h:'정부, 온라인 플랫폼 기업 규제 강화 법안 추진', t:'플랫폼 기업', way:2, a:1, e:'규제는 비용을 늘리거나 사업을 제한합니다. 해당 업종에는 악재예요.'},
+ {h:'바다조선, 3조원 규모 LNG운반선 12척 수주', t:'바다조선', way:1, a:0, e:'몇 년치 일감이 확정된 것이라 호재입니다. "장기"로 이어지는 뉴스라 반응도 큰 편이에요.'},
+ {h:'모두페이, 고객 정보 수백만 건 유출 사고 발생', t:'모두페이', way:1, a:1, e:'과징금, 소송, 고객 이탈이 예상되니 악재입니다. 신뢰가 핵심인 금융 서비스라 더 그래요.'},
+ {h:'미국 고용 지표 예상보다 강세... 금리 인하 기대 후퇴', t:'기술·성장주', way:3, a:1, e:'경제가 너무 좋으면 금리를 못 내립니다. 금리가 높게 유지되면 미래 이익에 기대는 성장주에 불리해요. "좋은 뉴스가 나쁜 뉴스"가 되는 경우입니다.'},
+ {h:'한빛전자 최대주주, 보유 지분 5% 블록딜로 매각', t:'한빛전자', way:1, a:1, e:'큰 물량이 시장에 나오고, 회사를 가장 잘 아는 사람이 판다는 신호로 읽혀 보통 악재입니다.'},
+ {h:'모두페이, 5,000억원 규모 자사주 매입 후 소각 발표', t:'모두페이', way:1, a:0, e:'회사가 자기 주식을 사서 없애면 남은 주식 한 주의 가치가 커집니다. 호재예요.'},
+ {h:'푸른바이오, 운영 자금 확보 위해 대규모 유상증자 결정', t:'푸른바이오', way:1, a:1, e:'새 주식을 찍어 팔면 내 주식의 몫이 줄어듭니다(희석). 돈이 모자라다는 신호이기도 해서 보통 악재예요.'},
+ {h:'바다조선, 올해 배당금 전년 대비 50% 확대', t:'바다조선', way:1, a:0, e:'주주에게 돌아가는 돈이 늘고, 회사가 이익에 자신 있다는 신호라 호재입니다.'},
+ {h:'중국, 한국 단체관광 전면 허용', t:'화장품·면세점', way:2, a:0, e:'중국 관광객이 많이 사는 제품과 매장이라 매출 증가가 기대됩니다. 호재예요.'},
+ {h:'D램 가격 3개월 연속 상승', t:'반도체 업종', way:2, a:0, e:'파는 제품 값이 오르면 같은 양을 팔아도 이익이 늘어납니다. 업종 전체 호재예요.'},
+ {h:'경쟁사, 같은 시장에 30% 저렴한 신제품 출시', t:'기존 1위 업체', way:2, a:1, e:'가격 경쟁이 시작되면 1위 업체도 가격을 내리거나 고객을 잃습니다. 악재예요.'},
+ {h:'모두페이, 코스피200 지수에 신규 편입', t:'모두페이', way:1, a:0, e:'코스피200을 따라가는 ETF와 펀드가 이 종목을 의무적으로 사야 하니 수요가 늘어 호재입니다.'},
+ {h:'한빛전자 대표, 횡령 혐의로 검찰 수사 착수', t:'한빛전자', way:1, a:1, e:'경영진 리스크는 회사 신뢰를 흔들고 최악의 경우 거래정지로 이어질 수 있어 악재입니다.'},
+ {h:'바다조선, 회사 이름을 "오션조선"으로 변경', t:'바다조선', way:1, a:2, e:'이름이 바뀐다고 버는 돈이 달라지지 않습니다. 대체로 중립이에요. 다만 사업을 완전히 바꾸는 신호라면 다시 봐야 해요.'},
+ {h:'한빛전자, 신임 재무담당 임원(CFO) 선임', t:'한빛전자', way:1, a:2, e:'평범한 인사 뉴스는 대체로 중립입니다. 전임자가 갑자기 물러난 이유가 따로 있다면 그게 진짜 뉴스예요.'},
+ {h:'유명 연예인이 푸른바이오 주식을 샀다는 소문 확산', t:'푸른바이오', way:1, a:2, e:'회사의 이익과 아무 관계가 없습니다. 이런 소문으로 잠깐 움직여도 근거가 없으니 따라가면 안 돼요.'},
+ {h:'정부, 다음 달 임시공휴일 지정', t:'반도체 업종', way:3, a:2, e:'공휴일 하루는 반도체 회사 이익에 거의 영향이 없습니다. 모든 뉴스가 모든 종목에 영향을 주진 않아요. 여행·유통이라면 얘기가 다르겠죠.'},
+ {h:'한빛전자 공장 화재, 생산 2주간 차질 예상', t:'한빛전자', way:1, a:1, e:'생산이 멈추면 매출이 줄어 악재입니다. 다만 "2주"라는 일회성 사건이라 임상 실패 같은 지속적 악재보다는 반응이 작은 편이에요.'},
+ {h:'정부, 반도체 공장 투자에 세액공제 확대', t:'반도체 업종', way:2, a:0, e:'세금을 덜 내면 그만큼 이익이 남습니다. 업종 호재예요.'},
+];
+const WAY={1:'① 회사 자체',2:'② 업종·산업',3:'③ 경제 전체'};
+const ANS=['호재 (오를 가능성)','악재 (내릴 가능성)','큰 영향 없음'];
+let news={qs:[],i:0,res:[]};
+function renderNewsStart(){
+  const st=state.news||{plays:0,best:0};
+  $('#newsBox').innerHTML=`<p class="eyebrow">연습하기</p><h3>헤드라인 10개, 방향 맞히기</h3>
+    <p class="small muted">가상의 뉴스 헤드라인과 대상(회사 또는 업종)을 보여드립니다. 호재인지 악재인지, 영향이 없는지 골라 보세요. 매번 다른 문제가 나와요.</p>
+    <p class="small">지금까지 ${st.plays}회 연습 · 최고 <b class="num">${st.best}/10</b></p>
+    <div><button class="btn btn-primary" id="newsStart">연습 시작</button></div>`;
+  $('#newsStart').onclick=()=>{ news={qs:[...NEWSQ].sort(()=>Math.random()-.5).slice(0,10),i:0,res:[]}; renderNewsQ(); };
+}
+function renderNewsQ(){
+  const q=news.qs[news.i];
+  $('#newsBox').innerHTML=`<div class="row between"><span class="pill">${news.i+1} / 10</span><span class="streak">${news.qs.map((_,k)=>`<i class="${news.res[k]===true?'ok':news.res[k]===false?'bad':''}"></i>`).join('')}</span></div>
+    <div class="headline"><small>가상 뉴스 헤드라인</small>${q.h}</div>
+    <div class="target"><span class="muted small">이 뉴스는</span><b>${q.t}</b><span class="muted small">에게?</span></div>
+    <div class="opts">${ANS.map((o,i)=>`<button class="opt" data-oi="${i}">${o}</button>`).join('')}</div>
+    <div class="explain" id="nEx" hidden></div>
+    <div><button class="btn btn-primary" id="nNext" hidden>${news.i===9?'결과 보기':'다음 뉴스'}</button></div>`;
+  document.querySelectorAll('#newsBox .opt').forEach(btn=>btn.onclick=()=>{
+    const oi=+btn.dataset.oi; const ok=oi===q.a; news.res[news.i]=ok;
+    document.querySelectorAll('#newsBox .opt').forEach(b=>{b.disabled=true; if(+b.dataset.oi===q.a) b.classList.add('ok');});
+    if(!ok) btn.classList.add('bad');
+    const ex=$('#nEx'); ex.hidden=false; ex.innerHTML=`${ok?'<b>정답!</b>':'<b>아쉬워요.</b>'} ${q.e}<br><span class="muted small">들어온 길: ${WAY[q.way]}</span>`;
+    $('#nNext').hidden=false;
+    $('#newsBox .streak').innerHTML=news.qs.map((_,k)=>`<i class="${news.res[k]===true?'ok':news.res[k]===false?'bad':''}"></i>`).join('');
+  });
+  $('#nNext').onclick=()=>{ news.i++; if(news.i<10) renderNewsQ(); else renderNewsResult(); };
+}
+function renderNewsResult(){
+  const score=news.res.filter(Boolean).length;
+  state.news=state.news||{plays:0,best:0}; state.news.plays++; state.news.best=Math.max(state.news.best,score); save();
+  const msg= score>=9?'뉴스를 읽는 눈이 생겼어요.': score>=6?'감이 잡히고 있어요. 틀린 것만 다시 보세요.':'괜찮아요. 위의 핵심 원리 4개를 다시 읽고 한 번 더 해보세요.';
+  const wrong=news.qs.filter((q,k)=>!news.res[k]);
+  $('#newsBox').innerHTML=`<p class="eyebrow">결과</p><p class="num" style="font-size:2.6rem;line-height:1">${score}<span class="muted" style="font-size:1rem"> / 10</span></p><p>${msg}</p>
+    <div class="row"><button class="btn btn-primary" id="newsAgain">다시 연습</button></div>
+    ${wrong.length?`<p class="eyebrow" style="margin-top:8px">틀린 뉴스 다시 보기</p>`+wrong.map(q=>`<div class="stack" style="gap:3px;padding:10px 0;border-top:1px solid var(--line)"><p class="small"><b>${q.h}</b> → ${q.t}</p><p class="small">정답: ${ANS[q.a]}</p><p class="small muted">${q.e}</p></div>`).join(''):''}`;
+  $('#newsAgain').onclick=renderNewsStart;
+}
 
 // ===== 종합 퀴즈 =====
 let quiz={qs:[],i:0,score:0,wrong:[]};
